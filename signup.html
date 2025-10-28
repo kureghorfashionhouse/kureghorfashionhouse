@@ -100,41 +100,63 @@ themeToggle.onclick = ()=> {
 };
 
 /* ---------- EMAILJS OTP ---------- */
-emailjs.init("Flmwubg3ooVoycoAS"); // তোমার EmailJS Public Key
+// EmailJS init
+emailjs.init("Flmwubg3ooVoycoAS"); // আপনার EmailJS Public Key
 let sentOTP = null;
 
 document.getElementById('send-otp').addEventListener('click', ()=> {
-  const name=document.getElementById('name').value.trim();
-  const email=document.getElementById('email').value.trim().toLowerCase();
-  const phone=document.getElementById('phone').value.trim();
-  const password=document.getElementById('password').value.trim();
+  const name = document.getElementById('name').value.trim();
+  const email = document.getElementById('email').value.trim().toLowerCase();
+  const phone = document.getElementById('phone').value.trim();
+  const password = document.getElementById('password').value.trim();
 
   if(!email||!password){ alert('Email ও Password বাধ্যতামূলক'); return; }
 
+  // User check
   const users = JSON.parse(localStorage.getItem('rebel_users')||'[]');
-  const existing = users.find(u=>u.email===email);
-  if(existing){ alert('User already exists'); window.location.href='login.html'; return; }
+  if(users.find(u=>u.email===email)){ 
+    alert('User already exists'); 
+    window.location.href='login.html'; 
+    return; 
+  }
 
+  // Generate OTP
   sentOTP = Math.floor(100000 + Math.random()*900000);
-  emailjs.send("service_qymsx6v","template_u1gxmq4",{otp:sentOTP,to_email:email,to_name:name||"User"})
-  .then(()=>{ alert('OTP sent to your email'); document.getElementById('otp-box').style.display='block'; })
-  .catch(e=>{ console.error(e); alert('Failed to send OTP'); });
+
+  // Send OTP via EmailJS
+  emailjs.send("service_qymsx6v","template_u1gxmq4",{
+    otp: sentOTP,
+    to_email: email,
+    to_name: name || "User"
+  })
+  .then(()=>{ 
+    alert('OTP sent to your email. Check inbox & spam folder.');
+    document.getElementById('otp-box').style.display='block'; 
+  })
+  .catch(e=>{ 
+    console.error("EmailJS Error:", e); 
+    alert('Failed to send OTP. Check console for details.');
+  });
 });
 
 document.getElementById('verify-otp').addEventListener('click', ()=> {
   const otp = document.getElementById('otp-input').value.trim();
-  const name=document.getElementById('name').value.trim();
-  const email=document.getElementById('email').value.trim().toLowerCase();
-  const phone=document.getElementById('phone').value.trim();
-  const password=document.getElementById('password').value.trim();
+  const name = document.getElementById('name').value.trim();
+  const email = document.getElementById('email').value.trim().toLowerCase();
+  const phone = document.getElementById('phone').value.trim();
+  const password = document.getElementById('password').value.trim();
 
-  if(otp!=sentOTP){ alert('Invalid OTP'); return; }
+  if(otp != sentOTP){ 
+    alert('Invalid OTP'); 
+    return; 
+  }
 
+  // Save new user
   const users = JSON.parse(localStorage.getItem('rebel_users')||'[]');
-  const newUser={name,email,phone,password};
+  const newUser = {name,email,phone,password};
   users.push(newUser);
-  localStorage.setItem('rebel_users',JSON.stringify(users));
-  localStorage.setItem('rebel_user',JSON.stringify(newUser));
+  localStorage.setItem('rebel_users', JSON.stringify(users));
+  localStorage.setItem('rebel_user', JSON.stringify(newUser));
   alert('Signup successful! Welcome '+(name||email));
   window.location.href='index.html';
 });
@@ -142,15 +164,18 @@ document.getElementById('verify-otp').addEventListener('click', ()=> {
 /* ---------- GOOGLE SIGNUP ---------- */
 function handleGoogleResponse(resp){
   try{
-    const p=JSON.parse(atob(resp.credential.split('.')[1]));
-    const user={name:p.name||'',email:p.email||'',phone:'',password:''};
-    const users=JSON.parse(localStorage.getItem('rebel_users')||'[]');
+    const p = JSON.parse(atob(resp.credential.split('.')[1]));
+    const user = {name:p.name||'', email:p.email||'', phone:'', password:''};
+    const users = JSON.parse(localStorage.getItem('rebel_users')||'[]');
     if(!users.find(u=>u.email===user.email)) users.push(user);
-    localStorage.setItem('rebel_users',JSON.stringify(users));
-    localStorage.setItem('rebel_user',JSON.stringify(user));
+    localStorage.setItem('rebel_users', JSON.stringify(users));
+    localStorage.setItem('rebel_user', JSON.stringify(user));
     alert('Welcome, '+(user.name||user.email));
     window.location.href='index.html';
-  }catch(e){ console.error(e); alert('Google signup failed'); }
+  } catch(e){ 
+    console.error(e); 
+    alert('Google signup failed'); 
+  }
 }
 </script>
 
