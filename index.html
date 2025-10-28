@@ -20,7 +20,8 @@
 body{margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s}
 header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--border);background:linear-gradient(90deg,var(--card),var(--bg));transition:.3s}
 .brand{display:flex;align-items:center;gap:12px}
-.logo{width:46px;height:46px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+.logo{width:46px;height:46px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.logo img{width:100%;height:100%;object-fit:cover;border-radius:8px;}
 nav{display:flex;gap:12px;align-items:center;position:relative}
 a.nav{color:var(--text);text-decoration:none;padding:8px;border-radius:8px}
 a.nav:hover{background:rgba(255,106,0,0.1)}
@@ -37,7 +38,8 @@ button{background:var(--accent);color:#fff;border:0;padding:8px 10px;border-radi
 button.secondary{background:transparent;border:1px solid var(--accent);color:var(--accent)}
 button:hover{opacity:.9}
 .float-chat{position:fixed;right:18px;bottom:18px;background:var(--accent);width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,0.12);z-index:1000}
-footer{text-align:center;padding:24px;color:var(--muted);margin-top:30px}
+footer{text-align:center;padding:24px;color:var(--muted);margin-top:30px;position:relative}
+footer span.credit{position:absolute;right:12px;bottom:12px;font-size:10px;color:var(--muted);}
 #user-dropdown{display:none;position:absolute;right:0;top:36px;background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.1);z-index:10}
 #user-dropdown a, #user-dropdown button{display:block;width:100%;padding:8px 12px;text-align:left;text-decoration:none;color:var(--text);border:none;background:none;cursor:pointer}
 @media(max-width:860px){header{padding:12px}}
@@ -47,7 +49,9 @@ footer{text-align:center;padding:24px;color:var(--muted);margin-top:30px}
 
 <header>
   <div class="brand">
-    <div class="logo">কৃ</div>
+    <div class="logo">
+      <img src="https://kureghorfashionhouse.vercel.app/logo.jpg" alt="Logo">
+    </div>
     <div>
       <div style="font-weight:700">কুঁড়েঘর ফ্যাশন হাউস</div>
       <div style="font-size:12px;color:var(--muted)">Quality clothes — white & orange theme</div>
@@ -59,7 +63,7 @@ footer{text-align:center;padding:24px;color:var(--muted);margin-top:30px}
     <a class="nav" href="cart.html">Cart (<span id="cart-count">0</span>)</a>
 
     <div id="user-menu-wrapper" style="position:relative;">
-      <button id="user-link" class="nav" style="background:none;border:none;cursor:pointer;padding:8px;border-radius:8px;">Login</button>
+      <button id="user-link" class="nav" style="background:none;border:none;cursor:pointer;padding:8px;border-radius:8px;color:var(--text)">Login</button>
       <div id="user-dropdown">
         <a href="account.html">Account</a>
         <button id="logout-btn">Logout</button>
@@ -88,7 +92,10 @@ footer{text-align:center;padding:24px;color:var(--muted);margin-top:30px}
 </main>
 
 <div class="float-chat" id="chat">💬</div>
-<footer>© কুঁড়েঘর ফ্যাশন হাউস</footer>
+<footer>
+  © কুঁড়েঘর ফ্যাশন হাউস
+  <span class="credit">THE REBEL ARIF VAUU</span>
+</footer>
 
 <script>
 /* PRODUCTS DATA */
@@ -164,6 +171,12 @@ function showUser(){
   const link = document.getElementById('user-link');
   if(u){
     link.textContent = u.name || u.email || 'Account';
+    // Light mode-এ কালো দেখানোর জন্য
+    if((document.documentElement.getAttribute('data-theme')||'light')==='light'){
+      link.style.color = '#000';
+    }else{
+      link.style.color = 'var(--text)';
+    }
     link.onclick = (e)=>{ e.stopPropagation(); dropdownToggle(); };
   } else {
     link.textContent='Login';
@@ -187,12 +200,23 @@ function setTheme(mode){
   document.documentElement.setAttribute('data-theme', mode);
   localStorage.setItem('theme', mode);
   modeBtn.textContent = mode==='dark' ? '☀️' : '🌙';
+  // update login link color
+  const link = document.getElementById('user-link');
+  const u = JSON.parse(localStorage.getItem('rebel_user')||'null');
+  if(u){
+    link.style.color = (mode==='light') ? '#000' : 'var(--text)';
+  }
 }
 modeBtn.addEventListener('click', ()=>{ const c = localStorage.getItem('theme')||'light'; setTheme(c==='light'?'dark':'light'); });
 setTheme(localStorage.getItem('theme')||'light');
 
-/* CHAT BUTTON */
-document.getElementById('chat').addEventListener('click', ()=> alert('Contact: +8801XXXXXXXXX\nEmail: info@kureghar.com'));
+/* CHAT BUTTON - WhatsApp */
+document.getElementById('chat').addEventListener('click', () => {
+    const phone = '8801782741114'; // country code + number
+    const message = encodeURIComponent('সালাম! কেমন আছেন? জিজ্ঞাসা করতে চাই।');
+    const url = `https://wa.me/${phone}?text=${message}`;
+    window.open(url, '_blank');
+});
 
 /* INIT */
 renderProducts(PRODUCTS);
@@ -201,5 +225,3 @@ updateCartCount();
 
 </body>
 </html>
-
-
