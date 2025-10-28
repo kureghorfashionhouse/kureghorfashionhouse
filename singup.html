@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Signup — কুঁড়েঘর ফ্যাশন হাউস</title>
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+:root{
+  --bg:#ffffff; --fg:#1b1b1b; --card:#fff8f3; --border:#f0e6de;
+  --btn-bg:#ff6a00; --btn-fg:#fff; --muted:#6b6b6b;
+}
+[data-theme="dark"]{
+  --bg:#0d0d0d; --fg:#f0f0f0; --card:#1a1a1a; --border:#333;
+  --btn-bg:#ff6a00; --btn-fg:#fff; --muted:#aaa;
+}
+body{
+  font-family:Inter,Arial; background:var(--bg); color:var(--fg);
+  display:flex;align-items:center;justify-content:center;min-height:100vh;
+  transition:background .3s,color .3s;
+}
+.box{
+  width:92%;max-width:420px;background:var(--card);
+  padding:22px;border-radius:12px;border:1px solid var(--border);
+  transition:background .3s,border .3s;
+}
+input{
+  width:100%;padding:10px;margin:6px 0;border-radius:8px;
+  border:1px solid var(--border);background:var(--bg);color:var(--fg);
+}
+button{
+  width:100%;padding:10px;border:none;background:var(--btn-bg);
+  color:var(--btn-fg);border-radius:8px;cursor:pointer;margin-top:8px;
+}
+.muted{font-size:13px;color:var(--muted)}
+.otp-box{display:none;margin-top:10px}
+.theme-toggle{
+  position:absolute;top:14px;right:14px;background:none;border:none;
+  font-size:22px;cursor:pointer;color:var(--fg);
+}
+</style>
+</head>
+<body>
+<button class="theme-toggle" id="theme-toggle" title="Toggle Dark/Light">🌙</button>
+
+<div class="box">
+  <h2 style="margin:0 0 8px">Create Account</h2>
+  <p class="muted">Signup with OTP or Google</p>
+
+  <!-- Google -->
+  <div id="g_id_onload"
+       data-client_id="YOUR_GOOGLE_CLIENT_ID"
+       data-context="signup"
+       data-ux_mode="popup"
+       data-callback="handleGoogleResponse"></div>
+  <div class="g_id_signin" data-type="standard"></div>
+
+  <hr style="margin:12px 0;border:none;border-top:1px solid var(--border)">
+
+  <label class="muted">Full Name</label>
+  <input id="name" placeholder="Full name" />
+  <label class="muted">Email</label>
+  <input id="email" placeholder="email@example.com" type="email" />
+  <label class="muted">Phone</label>
+  <input id="phone" placeholder="01XXXXXXXXX" />
+  <label class="muted">Password</label>
+  <input id="password" type="password" placeholder="Create password" />
+  <button id="send-otp">Continue</button>
+
+  <div class="otp-box" id="otp-box">
+    <label class="muted">Enter OTP</label>
+    <input id="otp-input" placeholder="Enter 6-digit OTP" />
+    <button id="verify-otp">Verify & Create Account</button>
+  </div>
+
+  <p class="muted" style="text-align:center;margin-top:12px">
+    Already have account? <a href="login.html">Login</a>
+  </p>
+</div>
+
+<script>
+/* ---------- DARK / LIGHT MODE ---------- */
+const themeToggle = document.getElementById('theme-toggle');
+const savedTheme = localStorage.getItem('theme') || 'light';
+document.body.dataset.theme = savedTheme;
+themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+themeToggle.onclick = ()=>{
+  const current = document.body.dataset.theme;
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.body.dataset.theme = next;
+  localStorage.setItem('theme', next);
+  themeToggle.textContent = next === 'dark' ? '☀️' : '🌙';
+};
+
+/* ---------- EMAILJS OTP ---------- */
+emailjs.init("Flmwubg3ooVoycoAS"); // replace with your key
+let sentOTP = null;
+
+document.getElementById('send-otp').addEventListener('click', ()=>{
+  const name=document.getElementById('name').value.trim();
+  const email=document.getElementById('email').value.trim().toLowerCase();
+  const phone=document.getElementById('phone').value.trim();
+  const password=document.getElementById('password').value.trim();
+
+  if(!email||!password){ alert('Email ও Password বাধ্যতামূলক'); return; }
+
+  const users = JSON.parse(localStorage.getItem('rebel_users')||'[]');
+  const existing = users.find(u=>u.email===email);
+
+  if(existing){
+    alert('User already exists, please login');
+    window.location.href='login.html';
+    return;
+  }
+
+  sentOTP = Math.floor(100000 + Math.random()*900000);
+  emailjs.send("service_qymsx6v","template_u1gxmq4",{otp:sentOTP,to_email:email,to_name:name||"User"})
+  .then(()=>{ alert('OTP sent to your email.'); document.getElementById('otp-box').style.display='block'; })
+  .catch(e=>{ console.error(e); alert('Failed to send OTP'); });
+});
+
+document.getElementById('verify-otp').addEventListener('click', ()=>{
+  const otp = document.getElementById('otp-input').value.trim();
+  const name=document.getElementById('name').value.trim();
+  const email=document.getElementById('email').value.trim().toLowerCase();
+  const phone=document.getElementById('phone').value.trim();
+  const password=document.getElementById('password').value.trim();
+
+  if(otp!=sentOTP){ alert('Invalid OTP'); return; }
+
+  const users = JSON.parse(localStorage.getItem('rebel_users')||'[]');
+  const newUser={name,email,phone,password};
+  users.push(newUser);
+  localStorage.setItem('rebel_users',JSON.stringify(users));
+  localStorage.setItem('rebel_user',JSON.stringify(newUser));
+  alert('Signup successful! Welcome '+(name||email));
+  window.location.href='index.html';
+});
+
+/* ---------- GOOGLE SIGNUP ---------- */
+function handleGoogleResponse(resp){
+  try{
+    const p=JSON.parse(atob(resp.credential.split('.')[1]));
+    const user={name:p.name||'',email:p.email||'',phone:'',password:''};
+    const users=JSON.parse(localStorage.getItem('rebel_users')||'[]');
+    if(!users.find(u=>u.email===user.email)) users.push(user);
+    localStorage.setItem('rebel_users',JSON.stringify(users));
+    localStorage.setItem('rebel_user',JSON.stringify(user));
+    alert('Welcome, '+(user.name||user.email));
+    window.location.href='index.html';
+  }catch(e){ console.error(e); alert('Google signup failed'); }
+}
+</script>
+</body>
+</html>
