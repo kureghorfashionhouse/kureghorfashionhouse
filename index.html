@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>কুঁড়েঘর ফ্যাশন হাউস</title>
+<meta name="description" content="কুঁড়েঘর ফ্যাশন হাউস — quality clothes. Add to cart, choose size, checkout with bKash/Rocket/COD."/>
+<style>
+:root{
+  --bg:#ffffff; --card:#fff8f3; --text:#1b1b1b; --accent:#ff6a00; --muted:#6b6b6b; --border:#efefef;
+}
+[data-theme="dark"] {
+  --bg:#0e0e0e; --card:#1a1a1a; --text:#f1f1f1; --accent:#ff7a1f; --muted:#a0a0a0; --border:#2b2b2b;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--border);background:linear-gradient(90deg,var(--card),var(--bg));transition:.3s}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:46px;height:46px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+nav{display:flex;gap:12px;align-items:center;position:relative}
+a.nav{color:var(--text);text-decoration:none;padding:8px;border-radius:8px}
+a.nav:hover{background:rgba(255,106,0,0.1)}
+.container{max-width:1100px;margin:20px auto;padding:0 16px}
+.top{display:flex;gap:12px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.search{flex:1}
+input[type=text], select{width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text)}
+.products{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--border);padding:12px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,0.05);transition:.3s}
+.card img{width:100%;height:180px;object-fit:cover;border-radius:8px}
+.price{color:var(--accent);font-weight:700;margin-top:6px}
+.actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+button{background:var(--accent);color:#fff;border:0;padding:8px 10px;border-radius:8px;cursor:pointer;transition:.2s}
+button.secondary{background:transparent;border:1px solid var(--accent);color:var(--accent)}
+button:hover{opacity:.9}
+.float-chat{position:fixed;right:18px;bottom:18px;background:var(--accent);width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,0.12);z-index:1000}
+footer{text-align:center;padding:24px;color:var(--muted);margin-top:30px}
+#user-dropdown{display:none;position:absolute;right:0;top:36px;background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.1);z-index:10}
+#user-dropdown a, #user-dropdown button{display:block;width:100%;padding:8px 12px;text-align:left;text-decoration:none;color:var(--text);border:none;background:none;cursor:pointer}
+@media(max-width:860px){header{padding:12px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo">কৃ</div>
+    <div>
+      <div style="font-weight:700">কুঁড়েঘর ফ্যাশন হাউস</div>
+      <div style="font-size:12px;color:var(--muted)">Quality clothes — white & orange theme</div>
+    </div>
+  </div>
+
+  <nav>
+    <a class="nav" href="index.html">Home</a>
+    <a class="nav" href="cart.html">Cart (<span id="cart-count">0</span>)</a>
+
+    <div id="user-menu-wrapper" style="position:relative;">
+      <button id="user-link" class="nav" style="background:none;border:none;cursor:pointer;padding:8px;border-radius:8px;">Login</button>
+      <div id="user-dropdown">
+        <a href="account.html">Account</a>
+        <button id="logout-btn">Logout</button>
+      </div>
+    </div>
+
+    <button id="modeToggle" style="background:transparent;border:1px solid var(--accent);color:var(--accent);padding:6px 10px;border-radius:8px;">🌙</button>
+  </nav>
+</header>
+
+<main class="container">
+  <div class="top">
+    <div class="search"><input id="search" type="text" placeholder="Search products..."></div>
+    <div style="width:160px"><select id="filterType">
+      <option value="">All types</option>
+      <option value="shirt">Shirt</option>
+      <option value="hoodie">Hoodie</option>
+      <option value="pants">Pants</option>
+    </select></div>
+  </div>
+
+  <section>
+    <h2>Products</h2>
+    <div class="products" id="product-grid"></div>
+  </section>
+</main>
+
+<div class="float-chat" id="chat">💬</div>
+<footer>© কুঁড়েঘর ফ্যাশন হাউস</footer>
+
+<script>
+/* PRODUCTS DATA */
+const PRODUCTS = [
+  {id:1,title:'Classic White Shirt',type:'shirt',price:1200,img:'https://picsum.photos/id/1011/800/600',sizes:['S','M','L','XL'],desc:'Cotton, slim fit'},
+  {id:2,title:'Orange Hoodie',type:'hoodie',price:2200,img:'https://picsum.photos/id/1021/800/600',sizes:['M','L','XL'],desc:'Warm fleece, orange accent'},
+  {id:3,title:'Denim Jeans',type:'pants',price:1800,img:'https://picsum.photos/id/1025/800/600',sizes:['30','32','34','36'],desc:'Stretch denim'},
+  {id:4,title:'Striped Polo',type:'shirt',price:999,img:'https://picsum.photos/id/1020/800/600',sizes:['S','M','L'],desc:'Breathable fabric'},
+  {id:5,title:'Grey Sweatpants',type:'pants',price:1300,img:'https://picsum.photos/id/1035/800/600',sizes:['S','M','L','XL'],desc:'Comfort fit'},
+  {id:6,title:'Summer T-Shirt',type:'shirt',price:850,img:'https://picsum.photos/id/1040/800/600',sizes:['S','M','L','XL'],desc:'Lightweight cotton'}
+];
+
+const CART_KEY = 'rebel_cart_v2';
+function readCart(){ return JSON.parse(localStorage.getItem(CART_KEY)||'[]'); }
+function writeCart(c){ localStorage.setItem(CART_KEY, JSON.stringify(c)); updateCartCount(); }
+
+function updateCartCount(){ const cart=readCart(); document.getElementById('cart-count').innerText = cart.reduce((s,i)=>s+i.qty,0); }
+
+function isLoggedIn(){ return !!localStorage.getItem('rebel_user'); }
+
+function requireLogin(){ alert("Please login first to continue."); location.href = 'login.html'; }
+
+function renderProducts(list){
+  const grid=document.getElementById('product-grid'); grid.innerHTML='';
+  list.forEach(p=>{
+    const el=document.createElement('div'); el.className='card';
+    const sizes = p.sizes.map(s=>`<option value="${s}">${s}</option>`).join('');
+    el.innerHTML = `
+      <img src="${p.img}" alt="${p.title}">
+      <h3>${p.title}</h3>
+      <div style="font-size:13px;color:var(--muted)">${p.desc}</div>
+      <div class="price">৳${p.price}</div>
+      <div style="margin-top:8px">
+        <label style="font-size:13px;color:var(--muted)">Size</label>
+        <select id="size-${p.id}">${sizes}</select>
+      </div>
+      <div class="actions">
+        <button onclick="handleAdd(${p.id})">Add to Cart</button>
+        <button class="secondary" onclick="handleBuy(${p.id})">Buy Now</button>
+      </div>
+    `;
+    grid.appendChild(el);
+  });
+}
+
+function handleAdd(id){ if(!isLoggedIn()) return requireLogin(); addToCart(id); }
+function handleBuy(id){ if(!isLoggedIn()) return requireLogin(); buyNow(id); }
+
+function addToCart(id, qty=1){
+  const p = PRODUCTS.find(x=>x.id===id);
+  const sizeSel = document.getElementById('size-'+id);
+  const size = sizeSel ? sizeSel.value : (p.sizes[0]||'');
+  const cart = readCart();
+  const ex = cart.find(i=>i.id===id && i.size===size);
+  if(ex) ex.qty += qty; else cart.push({id:p.id,title:p.title,price:p.price,qty,size,img:p.img});
+  writeCart(cart);
+  alert(`${p.title} (${size}) added to cart`);
+}
+
+function buyNow(id){ addToCart(id,1); location.href='cart.html'; }
+
+document.getElementById('search').addEventListener('input', apply);
+document.getElementById('filterType').addEventListener('change', apply);
+function apply(){
+  const q = document.getElementById('search').value.trim().toLowerCase();
+  const t = document.getElementById('filterType').value;
+  const filtered = PRODUCTS.filter(p=>{
+    const okQ = q ? (p.title.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q)) : true;
+    const okT = t ? p.type===t : true;
+    return okQ && okT;
+  });
+  renderProducts(filtered);
+}
+
+/* USER MENU */
+function showUser(){
+  const u = JSON.parse(localStorage.getItem('rebel_user')||'null');
+  const link = document.getElementById('user-link');
+  if(u){
+    link.textContent = u.name || u.email || 'Account';
+    link.onclick = (e)=>{ e.stopPropagation(); dropdownToggle(); };
+  } else {
+    link.textContent='Login';
+    link.onclick = ()=> location.href='login.html';
+  }
+}
+showUser();
+
+const dropdown = document.getElementById('user-dropdown');
+function dropdownToggle(){ dropdown.style.display = dropdown.style.display==='block' ? 'none' : 'block'; }
+document.getElementById('logout-btn').addEventListener('click', ()=>{
+  localStorage.removeItem('rebel_user');
+  dropdown.style.display='none';
+  location.reload();
+});
+document.addEventListener('click', ()=> dropdown.style.display='none');
+
+/* DARK MODE TOGGLE */
+const modeBtn = document.getElementById('modeToggle');
+function setTheme(mode){
+  document.documentElement.setAttribute('data-theme', mode);
+  localStorage.setItem('theme', mode);
+  modeBtn.textContent = mode==='dark' ? '☀️' : '🌙';
+}
+modeBtn.addEventListener('click', ()=>{ const c = localStorage.getItem('theme')||'light'; setTheme(c==='light'?'dark':'light'); });
+setTheme(localStorage.getItem('theme')||'light');
+
+/* CHAT BUTTON */
+document.getElementById('chat').addEventListener('click', ()=> alert('Contact: +8801XXXXXXXXX\nEmail: info@kureghar.com'));
+
+/* INIT */
+renderProducts(PRODUCTS);
+updateCartCount();
+</script>
+
+</body>
+</html>

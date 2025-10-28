@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Cart — কুঁড়েঘর ফ্যাশন হাউস</title>
+<style>
+:root{
+  --bg:#121212;
+  --fg:#e0e0e0;
+  --card:#1e1e1e;
+  --border:#333;
+  --btn-bg:#ff6a00;
+  --btn-fg:#fff;
+  --muted:#aaa;
+  --input-bg:#2a2a2a;
+  --input-border-focus:#ff6a00;
+}
+body{
+  font-family:Inter,Arial,sans-serif;
+  margin:0;
+  background:var(--bg);
+  color:var(--fg);
+  display:flex;
+  flex-direction:column;
+  min-height:100vh;
+  transition:background .3s,color .3s;
+}
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 18px;
+  border-bottom:1px solid var(--border);
+  background:var(--card);
+}
+header .user-name{
+  cursor:pointer;
+  font-weight:700;
+  color:var(--fg)
+}
+.container{
+  max-width:980px;
+  margin:20px auto;
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:24px;
+  flex:1;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:var(--card);
+  margin-top:12px;
+  border-radius:8px;
+  overflow:hidden;
+}
+th,td{
+  padding:10px;
+  border-bottom:1px solid var(--border);
+  text-align:left;
+  color:var(--fg);
+}
+td .qty-control{display:flex;align-items:center;gap:4px}
+td .qty-control button{
+  width:28px;height:28px;border:none;
+  background:var(--btn-bg);color:var(--btn-fg);
+  border-radius:4px;cursor:pointer;font-weight:700
+}
+img{width:70px;height:70px;object-fit:cover;border-radius:8px}
+input,select,textarea{
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  margin-top:6px;
+  background:var(--input-bg);
+  color:var(--fg);
+  transition:.2s;
+}
+input::placeholder,textarea::placeholder{color:var(--muted);}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--input-border-focus);}
+.right{max-width:380px}
+button{
+  background:var(--btn-bg);color:var(--btn-fg);
+  border:0;padding:10px;border-radius:8px;cursor:pointer;
+  width:100%;transition:.2s;font-weight:600;
+}
+button.secondary{
+  background:transparent;border:1px solid var(--btn-bg);
+  color:var(--btn-bg)
+}
+button:hover{opacity:.9}
+.muted{color:var(--muted);white-space:pre-line}
+footer{text-align:center;padding:18px;color:var(--muted)}
+.flex-row{display:flex;gap:16px;flex-wrap:wrap}
+.flex-col{flex:1;min-width:280px}
+.card{
+  background:var(--card);
+  padding:12px;
+  border-radius:8px;
+  border:1px solid var(--border);
+}
+@media(max-width:768px){
+  td img{width:50px;height:50px}
+  td .qty-control button{width:24px;height:24px;font-size:14px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="user-name" onclick="location.href='index.html'">কুঁড়েঘর ফ্যাশন হাউস</div>
+</header>
+
+<main class="container">
+<h2>Your Cart</h2>
+<div id="cart-area"></div>
+
+<div class="flex-row">
+  <!-- Customer Details + Payment -->
+  <div class="flex-col card">
+    <h3>Customer Details</h3>
+    <label>Name</label><input id="cust-name" placeholder="Full name" />
+    <label>Email</label><input id="cust-email" placeholder="email@example.com" />
+    <label>Phone *</label><input id="cust-phone" placeholder="01XXXXXXXXX" required />
+    <label>City</label><input id="cust-city" placeholder="City" />
+    <label>ZIP code</label><input id="cust-zip" placeholder="ZIP / Postal code" />
+
+    <!-- Payment Method -->
+    <div style="margin-top:16px;">
+      <label>Payment Method</label>
+      <select id="payment">
+        <option value="bkash">bKash</option>
+        <option value="rocket">Rocket</option>
+        <option value="cod">Cash on Delivery</option>
+      </select>
+      <div id="payment-fields" style="margin-top:8px"></div>
+    </div>
+
+    <div style="margin-top:12px;display:flex;gap:8px;flex-direction:column">
+      <button id="place-order">Place Order</button>
+      <button id="clear-cart" class="secondary">Clear Cart</button>
+    </div>
+  </div>
+
+  <!-- Order Summary -->
+  <aside class="flex-col right card">
+    <h3>Order Summary</h3>
+    <div class="muted" id="summary-lines"></div>
+  </aside>
+</div>
+</main>
+
+<footer>© কুঁড়েঘর ফ্যাশন হাউস</footer>
+
+<script>
+const CART_KEY='rebel_cart_v2';
+let currentOrderId='KFH-'+Math.random().toString(36).substring(2,9).toUpperCase();
+
+// Gmail auto-fill from login
+const user = JSON.parse(localStorage.getItem('rebel_user')||'{}');
+if(user){
+  document.getElementById('cust-name').value = user.name || '';
+  document.getElementById('cust-email').value = user.email || '';
+  document.getElementById('cust-phone').value = user.phone || '';
+}
+
+// Cart functions
+function readCart(){ return JSON.parse(localStorage.getItem(CART_KEY)||'[]'); }
+function writeCart(c){ localStorage.setItem(CART_KEY, JSON.stringify(c)); renderCart(); }
+function updateQty(idx,delta){ const cart=readCart(); cart[idx].qty=Math.max(1, cart[idx].qty+delta); writeCart(cart); }
+function removeItem(i){ const c=readCart(); c.splice(i,1); writeCart(c); }
+
+function renderCart(){
+  const cart=readCart();
+  const area=document.getElementById('cart-area');
+  if(cart.length===0){ 
+    area.innerHTML='<p style="color:#777">Cart is empty. Add products from <a href="index.html" style="color:#ff6a00;">home</a>.</p>'; 
+    document.getElementById('summary-lines').innerText=''; 
+    return;
+  }
+  let total=0;
+  let html='<table><thead><tr><th>Product</th><th>Size</th><th>Qty</th><th>Price</th><th>Subtotal</th><th></th></tr></thead><tbody>';
+  cart.forEach((it,idx)=>{ 
+    const sub=it.price*it.qty; total+=sub;
+    html+=`<tr>
+<td style="display:flex;gap:8px;align-items:center"><img src="${it.img}"/><div>${it.title}</div></td>
+<td>${it.size||'-'}</td>
+<td><div class="qty-control">
+<button onclick="updateQty(${idx},-1)">-</button><span>${it.qty}</span><button onclick="updateQty(${idx},1)">+</button>
+</div></td>
+<td>৳${it.price}</td>
+<td>৳${sub}</td>
+<td><button class="secondary" onclick="removeItem(${idx})">Remove</button></td></tr>`; 
+  });
+  html+='</tbody></table>'; 
+  area.innerHTML=html;
+
+  const shipping=total>0?(total<2000?60:0):0;
+  const tax=Math.round(total*0.05); 
+  const grand=total+shipping+tax;
+  document.getElementById('summary-lines').innerText=
+    `Order ID: ${currentOrderId}\n\nSubtotal: ৳${total}\nShipping: ৳${shipping}\nTax (5%): ৳${tax}\n\nTotal: ৳${grand}`;
+  area.dataset.totals=JSON.stringify({subtotal:total,shipping,tax,total:grand});
+}
+
+document.getElementById('clear-cart').addEventListener('click',()=>{ 
+  if(confirm('Clear cart?')){
+    localStorage.removeItem(CART_KEY); renderCart();
+  }
+});
+
+function renderPaymentFields(){
+  const v=document.getElementById('payment').value;
+  const f=document.getElementById('payment-fields');
+  if(v==='bkash'||v==='rocket'){ 
+    f.innerHTML=`<label>Sender Number</label><input id="pay-num" placeholder="01XXXXXXXXX"/>
+                  <label>Transaction ID</label><input id="pay-tx" placeholder="TX123456"/>`; 
+  }
+  else f.innerHTML=`<div style="color:#aaa;font-size:13px">You will pay on delivery.</div>`; 
+}
+document.getElementById('payment').addEventListener('change', renderPaymentFields); 
+renderPaymentFields();
+
+// Place order logic
+document.getElementById('place-order').addEventListener('click', async ()=>{
+  const cart=readCart();
+  if(cart.length===0){alert('Cart is empty'); return;}
+  const name=document.getElementById('cust-name').value.trim(),
+        email=document.getElementById('cust-email').value.trim(),
+        phone=document.getElementById('cust-phone').value.trim(),
+        city=document.getElementById('cust-city').value.trim(),
+        zip=document.getElementById('cust-zip').value.trim();
+  if(!name||!email||!phone||!city||!zip){alert('Please fill all customer details'); return;}
+  
+  const payment=document.getElementById('payment').value;
+  const payNum=document.getElementById('pay-num')?document.getElementById('pay-num').value.trim():'';
+  const payTx=document.getElementById('pay-tx')?document.getElementById('pay-tx').value.trim():'';
+  if((payment==='bkash'||payment==='rocket') && (payNum.length<11||payTx.length<3)){alert('Provide mobile payment info'); return;}
+  
+  const totals=JSON.parse(document.getElementById('cart-area').dataset.totals||'{}');
+  const items=cart.map(i=>`${i.title} (${i.size}) x${i.qty} = ৳${i.price*i.qty}`).join('; ');
+  const orderId=currentOrderId;
+  
+  const formData = {
+    access_key: "1c80f168-cd5c-442d-80be-6feae4bfeb27",
+    subject: `New Order: ${orderId}`,
+    name,email,phone,city,zip,
+    payment_method: payment,
+    payment_number: payNum,
+    transaction_id: payTx,
+    order_id: orderId,
+    items, total: totals.total
+  };
+
+  try{
+    document.getElementById('place-order').innerText='Sending...';
+    const res = await fetch('https://api.web3forms.com/submit',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(formData)
+    });
+    const result = await res.json();
+    if(result.success){
+      alert('Order sent successfully!');
+      localStorage.setItem('last_order', JSON.stringify({id:orderId,name,email,phone,city,zip,total:totals.total}));
+      localStorage.removeItem(CART_KEY);
+      location.href='success.html';
+    } else { alert('Failed to send order'); console.error(result); }
+  } catch(err){ alert('Error sending order'); console.error(err); }
+  finally{ document.getElementById('place-order').innerText='Place Order'; }
+});
+
+renderCart();
+</script>
+</body>
+</html>
