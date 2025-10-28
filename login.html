@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Signup/Login — কুঁড়েঘর ফ্যাশন হাউস</title>
+<title>Login — কুঁড়েঘর ফ্যাশন হাউস</title>
 <style>
 :root{--bg:#fff;--fg:#111;--card:#fff8f3;--btn-bg:#ff6a00;--btn-fg:#fff;--muted:#666;--border:#f0e6de;}
 [data-theme="dark"]{--bg:#0d0d0d;--fg:#f0f0f0;--card:#1a1a1a;--btn-bg:#ff6a00;--btn-fg:#fff;--muted:#aaa;--border:#333;}
@@ -11,9 +11,8 @@ body{font-family:Inter,Arial;margin:0;padding:0;background:var(--bg);color:var(-
 .box{background:var(--card);padding:20px;border-radius:12px;border:1px solid var(--border);width:92%;max-width:400px;}
 input,button{width:100%;padding:10px;margin:6px 0;border-radius:8px;border:1px solid var(--border);}
 button{background:var(--btn-bg);color:var(--btn-fg);border:none;cursor:pointer;}
-.otp-box{display:none;}
-.muted{font-size:13px;color:var(--muted);}
 .theme-toggle{position:absolute;top:14px;right:14px;font-size:22px;background:none;border:none;color:var(--fg);cursor:pointer;}
+.muted{font-size:13px;color:var(--muted);}
 </style>
 </head>
 <body>
@@ -21,52 +20,19 @@ button{background:var(--btn-bg);color:var(--btn-fg);border:none;cursor:pointer;}
 <button class="theme-toggle" id="theme-toggle">🌙</button>
 
 <div class="box">
-  <h2 id="form-title">Signup / Login</h2>
-
-  <div id="step1">
-    <label class="muted">Full Name</label>
-    <input id="name" placeholder="Full name"/>
-    <label class="muted">Phone (+8801XXXXXXXXX)</label>
-    <input id="phone"/>
-    <button id="send-otp">Send OTP</button>
-  </div>
-
-  <div class="otp-box" id="step2">
-    <label class="muted">Enter OTP</label>
-    <input id="otp-input" placeholder="6-digit OTP"/>
-    <button id="verify-otp">Verify OTP</button>
-  </div>
-
-  <div class="otp-box" id="step3">
-    <label class="muted">Set Password</label>
-    <input id="password" type="password" placeholder="Enter password"/>
-    <button id="set-password">Finish Signup</button>
-  </div>
+  <h2>Login</h2>
+  <label class="muted">Phone (+8801XXXXXXXXX)</label>
+  <input id="phone" placeholder="+8801XXXXXXXXX"/>
+  <label class="muted">Password</label>
+  <input id="password" type="password"/>
+  <button id="login-btn">Login</button>
 
   <p class="muted" style="text-align:center;margin-top:10px">
-    Already have account? <a href="#" id="forgot-btn">Forgot Password?</a>
+    Don't have account? <a href="signup.html" id="signup-link">Signup</a>
   </p>
-
-  <div id="recaptcha-container"></div>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-
-// ------------------- Firebase Config -------------------
-const firebaseConfig = {
-  apiKey: "AIzaSyAsH1zbPITn4CNbm2acn_C2_rhe_-dI8O8",
-  authDomain: "kureghor-690ea.firebaseapp.com",
-  projectId: "kureghor-690ea",
-  storageBucket: "kureghor-690ea.appspot.com",
-  messagingSenderId: "707075011535",
-  appId: "1:707075011535:web:f79f204445461ff1db98ba"
-};
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
-// ------------------- Theme Toggle -------------------
+<script>
 const themeToggle = document.getElementById('theme-toggle');
 const savedTheme = localStorage.getItem('theme')||'light';
 document.body.dataset.theme = savedTheme;
@@ -78,82 +44,19 @@ themeToggle.onclick = ()=>{
   themeToggle.textContent = next==='dark'?'☀️':'🌙';
 };
 
-// ------------------- OTP Flow -------------------
-let confirmationResult = null;
-const step1 = document.getElementById('step1');
-const step2 = document.getElementById('step2');
-const step3 = document.getElementById('step3');
-
-function setupRecaptcha(){
-  if(!window.recaptchaVerifier){
-    window.recaptchaVerifier = new RecaptchaVerifier(
-      'recaptcha-container',
-      { 'size':'invisible' },
-      auth
-    );
-    window.recaptchaVerifier.render();
-  }
-}
-
-document.getElementById('send-otp').addEventListener('click', ()=>{
+// Login Function
+document.getElementById('login-btn').addEventListener('click', ()=>{
   const phone = document.getElementById('phone').value.trim();
-  const name = document.getElementById('name').value.trim();
-  if(!phone.startsWith("+")){ alert("Use country code +880"); return; }
-  setupRecaptcha();
-  signInWithPhoneNumber(auth, phone, window.recaptchaVerifier)
-    .then(res=>{
-      confirmationResult = res;
-      step1.style.display='none';
-      step2.style.display='block';
-      alert("OTP sent to "+phone);
-    }).catch(e=>{console.error(e); alert("Failed to send OTP");});
-});
-
-document.getElementById('verify-otp').addEventListener('click', ()=>{
-  const code = document.getElementById('otp-input').value.trim();
-  if(!confirmationResult){ alert("No OTP sent"); return; }
-  confirmationResult.confirm(code)
-    .then(result=>{
-      window.firebaseUser = result.user;
-      step2.style.display='none';
-      step3.style.display='block';
-    }).catch(e=>{ console.error(e); alert("Invalid OTP"); });
-});
-
-document.getElementById('set-password').addEventListener('click', ()=>{
   const password = document.getElementById('password').value.trim();
-  const name = document.getElementById('name').value.trim();
-  const phone = document.getElementById('phone').value.trim();
-  if(!password){ alert("Enter password"); return; }
   const users = JSON.parse(localStorage.getItem('rebel_users')||'[]');
-  const existing = users.find(u=>u.phone===phone);
-  if(existing){ existing.password = password; }
-  else{ users.push({name,phone,password}); }
-  localStorage.setItem('rebel_users', JSON.stringify(users));
-  localStorage.setItem('rebel_user', JSON.stringify({name,phone}));
-  alert("Signup successful! Welcome "+name);
-  window.location.href='index.html';
-});
-
-// ------------------- Forgot Password -------------------
-document.getElementById('forgot-btn').addEventListener('click', ()=>{
-  const phone = prompt("Enter your phone number (+880...) for OTP");
-  if(!phone) return;
-  setupRecaptcha();
-  signInWithPhoneNumber(auth, phone, window.recaptchaVerifier)
-    .then(res=>{
-      confirmationResult = res;
-      const otp = prompt("Enter OTP sent to your phone");
-      return confirmationResult.confirm(otp);
-    }).then(user=>{
-      const newPass = prompt("Enter new password");
-      if(!newPass) return alert("Cancelled");
-      const users = JSON.parse(localStorage.getItem('rebel_users')||'[]');
-      const u = users.find(u=>u.phone===user.phoneNumber);
-      if(u) u.password = newPass;
-      localStorage.setItem('rebel_users', JSON.stringify(users));
-      alert("Password updated! Login with new password");
-    }).catch(e=>{ console.error(e); alert("Failed OTP or user"); });
+  const user = users.find(u=>u.phone===phone && u.password===password);
+  if(user){
+    localStorage.setItem('rebel_user', JSON.stringify(user));
+    alert("Welcome back, "+user.name);
+    window.location.href='index.html';
+  } else {
+    alert("Invalid phone or password");
+  }
 });
 </script>
 </body>
