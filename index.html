@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>কুঁড়েঘর ফ্যাশন হাউস</title>
 <meta name="description" content="কুঁড়েঘর ফ্যাশন হাউস — quality clothes. Add to cart, choose size, checkout with bKash/Rocket/COD."/>
+<meta name="keywords" content="কুঁড়েঘর ফ্যাশন হাউস, kureghor fashion house, clothes, shirts, hoodies, pants, online shopping Bangladesh"/>
+<meta name="author" content="কুঁড়েঘর ফ্যাশন হাউস"/>
+<meta name="google-site-verification" content="YOUR_VERIFICATION_CODE_HERE"/>
+
 <style>
 :root{
   --bg:#ffffff; --card:#fff8f3; --text:#1b1b1b; --accent:#ff6a00; --muted:#6b6b6b; --border:#efefef;
@@ -100,11 +104,8 @@ const PRODUCTS = [
 const CART_KEY = 'rebel_cart_v2';
 function readCart(){ return JSON.parse(localStorage.getItem(CART_KEY)||'[]'); }
 function writeCart(c){ localStorage.setItem(CART_KEY, JSON.stringify(c)); updateCartCount(); }
-
 function updateCartCount(){ const cart=readCart(); document.getElementById('cart-count').innerText = cart.reduce((s,i)=>s+i.qty,0); }
-
 function isLoggedIn(){ return !!localStorage.getItem('rebel_user'); }
-
 function requireLogin(){ alert("Please login first to continue."); location.href = 'login.html'; }
 
 function renderProducts(list){
@@ -132,7 +133,6 @@ function renderProducts(list){
 
 function handleAdd(id){ if(!isLoggedIn()) return requireLogin(); addToCart(id); }
 function handleBuy(id){ if(!isLoggedIn()) return requireLogin(); buyNow(id); }
-
 function addToCart(id, qty=1){
   const p = PRODUCTS.find(x=>x.id===id);
   const sizeSel = document.getElementById('size-'+id);
@@ -143,7 +143,6 @@ function addToCart(id, qty=1){
   writeCart(cart);
   alert(`${p.title} (${size}) added to cart`);
 }
-
 function buyNow(id){ addToCart(id,1); location.href='cart.html'; }
 
 document.getElementById('search').addEventListener('input', apply);
