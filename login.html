@@ -28,11 +28,30 @@ button{background:var(--btn-bg);color:var(--btn-fg);border:none;cursor:pointer;}
   <button id="login-btn">Login</button>
 
   <p class="muted" style="text-align:center;margin-top:10px">
-    Don't have account? <a href="signup.html" id="signup-link">Signup</a>
+    Don't have account? <a href="signup.html" id="signup-link">Signup</a> |
+    <a href="#" id="forgot-btn">Forgot Password?</a>
   </p>
+
+  <div id="recaptcha-container"></div>
 </div>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+
+// Firebase Config
+const firebaseConfig = {
+  apiKey: "AIzaSyAsH1zbPITn4CNbm2acn_C2_rhe_-dI8O8",
+  authDomain: "kureghor-690ea.firebaseapp.com",
+  projectId: "kureghor-690ea",
+  storageBucket: "kureghor-690ea.appspot.com",
+  messagingSenderId: "707075011535",
+  appId: "1:707075011535:web:f79f204445461ff1db98ba"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+// Theme Toggle
 const themeToggle = document.getElementById('theme-toggle');
 const savedTheme = localStorage.getItem('theme')||'light';
 document.body.dataset.theme = savedTheme;
@@ -57,6 +76,36 @@ document.getElementById('login-btn').addEventListener('click', ()=>{
   } else {
     alert("Invalid phone or password");
   }
+});
+
+// ------------------- Forgot Password -------------------
+function setupRecaptcha(){
+  if(!window.recaptchaVerifier){
+    window.recaptchaVerifier = new RecaptchaVerifier('recaptcha-container',{ 'size':'invisible' }, auth);
+    window.recaptchaVerifier.render();
+  }
+}
+
+document.getElementById('forgot-btn').addEventListener('click', ()=>{
+  const phone = prompt("Enter your phone number (+8801XXXXXXXXX) for OTP");
+  if(!phone) return;
+  setupRecaptcha();
+  signInWithPhoneNumber(auth, phone, window.recaptchaVerifier)
+    .then(res=>{
+      const confirmationResult = res;
+      const otp = prompt("Enter OTP sent to your phone");
+      return confirmationResult.confirm(otp);
+    })
+    .then(user=>{
+      const newPass = prompt("Enter new password");
+      if(!newPass) return alert("Cancelled");
+      const users = JSON.parse(localStorage.getItem('rebel_users')||'[]');
+      const u = users.find(u=>u.phone===user.phoneNumber);
+      if(u) u.password = newPass;
+      localStorage.setItem('rebel_users', JSON.stringify(users));
+      alert("Password updated! Login with new password");
+    })
+    .catch(e=>{ console.error(e); alert("Failed OTP or user"); });
 });
 </script>
 </body>
