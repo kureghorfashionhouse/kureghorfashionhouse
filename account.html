@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Account — কুঁড়েঘর ফ্যাশন হাউস</title>
+<style>
+:root{
+  --bg:#ffffff; --fg:#1b1b1b; --card:#fff8f3; --border:#f0e6de;
+  --btn-bg:#ff6a00; --btn-fg:#fff; --muted:#6b6b6b;
+}
+[data-theme="dark"]{
+  --bg:#0d0d0d; --fg:#f0f0f0; --card:#1a1a1a; --border:#333;
+  --btn-bg:#ff6a00; --btn-fg:#fff; --muted:#aaa;
+}
+body{
+  font-family:Inter,Arial; background:var(--bg); color:var(--fg);
+  display:flex;align-items:center;justify-content:center;min-height:100vh;
+  transition:background .3s,color .3s;
+}
+.container{
+  width:92%; max-width:420px; background:var(--card); border-radius:12px;
+  padding:22px; border:1px solid var(--border); transition:background .3s,border .3s;
+}
+h2{margin:0 0 12px;}
+p{margin:6px 0;}
+input{
+  width:100%; padding:8px; margin:6px 0; border-radius:8px;
+  border:1px solid var(--border); background:var(--bg); color:var(--fg);
+}
+button{
+  width:100%; padding:10px; border:none; border-radius:8px; cursor:pointer;
+  margin-top:8px; background:var(--btn-bg); color:var(--btn-fg);
+}
+.theme-toggle{
+  position:absolute;top:14px;right:14px;background:none;border:none;
+  font-size:22px;cursor:pointer;color:var(--fg);
+}
+.change-pass{margin-top:16px;padding:12px;border:1px solid var(--border);border-radius:12px;}
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" id="theme-toggle" title="Toggle Dark/Light">🌙</button>
+
+<div class="container">
+  <h2>আমার অ্যাকাউন্ট</h2>
+  <div id="user-info"></div>
+
+  <div class="change-pass" id="change-pass-box">
+    <h3>Change Password</h3>
+    <input type="password" id="old-pass" placeholder="Current Password" />
+    <input type="password" id="new-pass" placeholder="New Password" />
+    <button id="change-pass-btn">Update Password</button>
+  </div>
+
+  <button id="logout-btn">Logout</button>
+</div>
+
+<script>
+/* ---------- DARK / LIGHT MODE ---------- */
+const themeToggle = document.getElementById('theme-toggle');
+const savedTheme = localStorage.getItem('theme') || 'light';
+document.body.dataset.theme = savedTheme;
+themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+themeToggle.onclick = ()=> {
+  const current = document.body.dataset.theme;
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.body.dataset.theme = next;
+  localStorage.setItem('theme', next);
+  themeToggle.textContent = next === 'dark' ? '☀️' : '🌙';
+};
+
+/* ---------- USER INFO ---------- */
+let user = JSON.parse(localStorage.getItem('rebel_user')||'null');
+const infoDiv = document.getElementById('user-info');
+const passBox = document.getElementById('change-pass-box');
+
+if(!user){
+  infoDiv.innerHTML = '<p>আপনি লগইন করেননি। <a href="login.html">Login</a> করুন।</p>';
+  document.getElementById('logout-btn').style.display='none';
+  passBox.style.display='none';
+}else{
+  infoDiv.innerHTML = `
+    <p><strong>Name:</strong> ${user.name||'-'}</p>
+    <p><strong>Email:</strong> ${user.email||'-'}</p>
+    <p><strong>Phone:</strong> ${user.phone||'-'}</p>
+  `;
+}
+
+/* ---------- CHANGE PASSWORD ---------- */
+document.getElementById('change-pass-btn').addEventListener('click', ()=>{
+  const oldPass = document.getElementById('old-pass').value.trim();
+  const newPass = document.getElementById('new-pass').value.trim();
+
+  if(!oldPass || !newPass){ alert('সব ফিল্ড পূরণ করুন'); return; }
+  if(oldPass !== user.password){ alert('Current password ভুল'); return; }
+
+  // Update user in localStorage
+  const users = JSON.parse(localStorage.getItem('rebel_users')||'[]');
+  const idx = users.findIndex(u=>u.email===user.email);
+  if(idx>-1){
+    users[idx].password = newPass;
+    localStorage.setItem('rebel_users', JSON.stringify(users));
+    user.password = newPass;
+    localStorage.setItem('rebel_user', JSON.stringify(user));
+    alert('Password successfully updated');
+    document.getElementById('old-pass').value='';
+    document.getElementById('new-pass').value='';
+  }
+});
+
+/* ---------- LOGOUT ---------- */
+document.getElementById('logout-btn').addEventListener('click', ()=>{
+  localStorage.removeItem('rebel_user');
+  alert('আপনি লগআউট হয়েছেন।');
+  window.location.href='index.html';
+});
+</script>
+
+</body>
+</html>
