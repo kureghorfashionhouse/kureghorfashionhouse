@@ -4,8 +4,12 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Signup — কুঁড়েঘর ফ্যাশন হাউস</title>
-<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+
+<!-- Google Sign-In -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<!-- EmailJS -->
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+
 <style>
 :root{
   --bg:#ffffff; --fg:#1b1b1b; --card:#fff8f3; --border:#f0e6de;
@@ -42,18 +46,20 @@ button{
 </style>
 </head>
 <body>
+
 <button class="theme-toggle" id="theme-toggle" title="Toggle Dark/Light">🌙</button>
 
 <div class="box">
   <h2 style="margin:0 0 8px">Create Account</h2>
   <p class="muted">Signup with OTP or Google</p>
 
-  <!-- Google -->
+  <!-- Google Sign-In -->
   <div id="g_id_onload"
-       data-client_id="YOUR_GOOGLE_CLIENT_ID"
+       data-client_id="751325738501-un055mf6o8jlo8p0va24hjht2jqijfk4.apps.googleusercontent.com"
        data-context="signup"
        data-ux_mode="popup"
-       data-callback="handleGoogleResponse"></div>
+       data-callback="handleGoogleResponse">
+  </div>
   <div class="g_id_signin" data-type="standard"></div>
 
   <hr style="margin:12px 0;border:none;border-top:1px solid var(--border)">
@@ -85,7 +91,7 @@ const themeToggle = document.getElementById('theme-toggle');
 const savedTheme = localStorage.getItem('theme') || 'light';
 document.body.dataset.theme = savedTheme;
 themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
-themeToggle.onclick = ()=>{
+themeToggle.onclick = ()=> {
   const current = document.body.dataset.theme;
   const next = current === 'dark' ? 'light' : 'dark';
   document.body.dataset.theme = next;
@@ -94,10 +100,10 @@ themeToggle.onclick = ()=>{
 };
 
 /* ---------- EMAILJS OTP ---------- */
-emailjs.init("Flmwubg3ooVoycoAS"); // replace with your key
+emailjs.init("Flmwubg3ooVoycoAS"); // তোমার EmailJS Public Key
 let sentOTP = null;
 
-document.getElementById('send-otp').addEventListener('click', ()=>{
+document.getElementById('send-otp').addEventListener('click', ()=> {
   const name=document.getElementById('name').value.trim();
   const email=document.getElementById('email').value.trim().toLowerCase();
   const phone=document.getElementById('phone').value.trim();
@@ -107,20 +113,15 @@ document.getElementById('send-otp').addEventListener('click', ()=>{
 
   const users = JSON.parse(localStorage.getItem('rebel_users')||'[]');
   const existing = users.find(u=>u.email===email);
-
-  if(existing){
-    alert('User already exists, please login');
-    window.location.href='login.html';
-    return;
-  }
+  if(existing){ alert('User already exists'); window.location.href='login.html'; return; }
 
   sentOTP = Math.floor(100000 + Math.random()*900000);
   emailjs.send("service_qymsx6v","template_u1gxmq4",{otp:sentOTP,to_email:email,to_name:name||"User"})
-  .then(()=>{ alert('OTP sent to your email.'); document.getElementById('otp-box').style.display='block'; })
+  .then(()=>{ alert('OTP sent to your email'); document.getElementById('otp-box').style.display='block'; })
   .catch(e=>{ console.error(e); alert('Failed to send OTP'); });
 });
 
-document.getElementById('verify-otp').addEventListener('click', ()=>{
+document.getElementById('verify-otp').addEventListener('click', ()=> {
   const otp = document.getElementById('otp-input').value.trim();
   const name=document.getElementById('name').value.trim();
   const email=document.getElementById('email').value.trim().toLowerCase();
@@ -152,5 +153,6 @@ function handleGoogleResponse(resp){
   }catch(e){ console.error(e); alert('Google signup failed'); }
 }
 </script>
+
 </body>
 </html>
